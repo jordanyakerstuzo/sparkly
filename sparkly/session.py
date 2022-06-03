@@ -158,10 +158,11 @@ class SparklySession(SparkSession):
             # It's the first run, so we have to create context and demonise the process.
             if context is None:
                 context = get_context()
-                if os.fork() == 0:  # Detached process.
+                session_pid = os.fork()
+                if session_pid == 0:  # Detached process.
                     signal.pause()
                 else:
-                    InstantTesting.set_context(context)
+                    InstantTesting.set_context(context, session_pid)
         else:
             context = get_context()
 
@@ -180,7 +181,7 @@ class SparklySession(SparkSession):
         SparklySession._instantiated_session = self
 
     @classmethod
-    def get_or_create(cls):
+    def get_or_create(cls, additional_options=None):
         """Access instantiated sparkly session.
 
         If sparkly session has already been instantiated, return that
@@ -191,7 +192,7 @@ class SparklySession(SparkSession):
             SparklySession (or subclass).
         """
         if SparklySession._instantiated_session is None:
-            cls()
+            cls(additional_options)
         return SparklySession._instantiated_session
 
     @classmethod

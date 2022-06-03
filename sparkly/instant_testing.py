@@ -93,18 +93,16 @@ class InstantTesting(object):
         return os.path.exists(cls.LOCK_FILE_PATH)
 
     @classmethod
-    def set_context(cls, spark_context):
+    def set_context(cls, spark_context, session_pid):
         """Set the given spark context for instant testing.
 
         Args:
             spark_context (pyspark.SparkContext)
+            session_pid (int)
         """
         assert cls.is_activated()
 
         gateway_port = spark_context._gateway.java_gateway_server.getListeningPort()
-
-        # pid of the python process that holds JVM with running Spark Context.
-        session_pid = os.getpid()
 
         with open(cls.LOCK_FILE_PATH, 'w') as lock:
             json.dump(
